@@ -10,11 +10,11 @@
 #define NUMBER    3
 using namespace std;
 
-char *prog; /* указатель на анализируемое выражение */
+char *prog; /* pointer to the test expression */
 char token[80];
 char tok_type;
 
-double vars[26] = { /* 26 пользовательских переменных,  A-Z */
+double vars[26] = { /* custom variables 26 ,  A-Z */
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -30,7 +30,7 @@ void serror(int error);
 double find_var(char *s);
 int isdelim(char c);
 
-/* Точка входа анализатора. */
+/* The entry point of the Analyzer */
 void eval_exp(double *answer)
 {
     get_token();
@@ -39,10 +39,10 @@ void eval_exp(double *answer)
         return;
     }
     eval_exp1(answer);
-    if(*token) serror(0); /* последня лексема должна быть нулем */
+    if(*token) serror(0); /* latest token must be zero */
 }
 
-/* Обработка присваивания. */
+/* The processing of the assignment */
 void eval_exp1(double *answer)
 {
     int slot;
@@ -50,21 +50,21 @@ void eval_exp1(double *answer)
     char temp_token[80];
     
     if(tok_type == VARIABLE) {
-        /* сохранить старую лексему */
+        /* Save the old token */
         strcpy(temp_token, token);
         ttok_type = tok_type;
-        /* вычислить индекс переменной */
+        /* calculate the index variable */
         slot = toupper(*token) - 'A';
         
         get_token();
         if(*token != '=') {
-            cin.putback(ttok_type); /* вернуть текущую лексему */
-            /* восстановить старую лексему - это не присваивание */
+            cin.putback(ttok_type); /* return the current token */
+            /* restore the old token -  it is not assignment */
             strcpy(token, temp_token);
             tok_type = ttok_type;
         }
         else {
-            get_token(); /* получить следующую часть выражения */
+            get_token(); /* get next subexpression */
             eval_exp2(answer);
             vars[slot] = *answer;
             return;
@@ -73,7 +73,7 @@ void eval_exp1(double *answer)
     eval_exp2(answer);
 }
 
-/* Сложение или вычитание двух слагаемых. */
+/* Addition or subtraction of two terms. */
 void eval_exp2(double *answer)
 {
     register char op;
@@ -94,7 +94,7 @@ void eval_exp2(double *answer)
     }
 }
 
-/* Умножение или деление двух множителей. */
+/* Multiplication or division of two factors. */
 void eval_exp3(double *answer)
 {
     register char op;
@@ -110,7 +110,7 @@ void eval_exp3(double *answer)
             break;
         case '/':
             if(temp == 0.0) {
-                serror(3); /* деление на ноль */
+                serror(3); /* Division by zero */
                 *answer = 0.0;
             } else *answer /= temp;
             break;
@@ -121,7 +121,7 @@ void eval_exp3(double *answer)
     }
 }
 
-/* Возведение в степень */
+/* Exponentiation process */
 void eval_exp4(double *answer)
 {
     double temp, ex;
@@ -141,7 +141,7 @@ void eval_exp4(double *answer)
     }
 }
 
-/* Вычисление унарного + и -. */
+/ * The calculation of the unary + and -. * /
 void eval_exp5(double *answer)
 {
     register char  op;
@@ -155,7 +155,7 @@ void eval_exp5(double *answer)
     if(op == '-') *answer = -(*answer);
 }
 
-/* Обработка выражения в скобках. */
+/* Processing of expression in brackets. */
 void eval_exp6(double *answer)
 {
     if((*token == '(')) {
@@ -168,7 +168,7 @@ void eval_exp6(double *answer)
     else atom(answer);
 }
 
-/* Получение значения числа или переменной. */
+/ * Get the value of a number or variable. * /
 void atom(double *answer)
 {
     switch(tok_type) {
@@ -185,7 +185,7 @@ void atom(double *answer)
     }
 }
 
-/* Возврат лексемы во входной поток. */
+/ * Return the tokens in the input stream. * /
 void putback(void)
 {
     char *t;
@@ -194,7 +194,7 @@ void putback(void)
     for(; *t; t++) prog--;
 }
 
-/* Отображение сообщения о синтаксической ошибке. */
+/ * Display a syntax error. * /
 void serror(int error)
 {
     static char *e[]= {
@@ -206,7 +206,7 @@ void serror(int error)
     cout << "%s\n" << e[error] << endl;
 }
 
-/* Получение очередной лексемы. */
+/ * Get next token. * /
 void get_token(void)
 {
     register char *temp;
@@ -215,14 +215,14 @@ void get_token(void)
     temp = token;
     *temp = '\0';
     
-    if(!*prog) return; /* конец выражения */
+    if(!*prog) return; / * End of the expression * /
     
-    while(*prog!='\n'&& isspace(*prog)) ++prog; /* пропустить пробелы,
-                  символы табуляции и пустой строки */
+    while(*prog!='\n'&& isspace(*prog)) ++prog; / * Skip white space,
+                                                tabs, and an empty string * /
     
     if(strchr("+-*/%^=()", *prog)){
         tok_type = DELIMITER;
-        /* перейти к следующему символу */
+        /* move to next character */
         *temp++ = *prog++;
     }
     else if(isalpha(*prog)) {
@@ -237,14 +237,23 @@ void get_token(void)
     *temp = '\0';
 }
 
+<<<<<<< HEAD:a1-calculator/main.cpp.autosave
 // Возвращение значения ИСТИНА, если с является разделителем. 
+=======
+/* Return true if c is a separator. */
+>>>>>>> 0d19695a7dcbf57ba98a6f7548a16f386685f7fe:a1-calculator/main.cpp
 int isdelim(char c)
 {
     if(strchr(" +-/*%^=()", c) || c==9 || c=='\r' || c==0)
         return 1;
     return 0;
 }
+<<<<<<< HEAD:a1-calculator/main.cpp.autosave
 // Get the value of a variable.
+=======
+
+/ * Get the value of a variable. * /
+>>>>>>> 0d19695a7dcbf57ba98a6f7548a16f386685f7fe:a1-calculator/main.cpp
 double find_var(char *s)
 {
     if(!isalpha(*s)){
@@ -261,11 +270,15 @@ int main(void)
     
     p = (char *) malloc(100);
     if(!p) {
+<<<<<<< HEAD:a1-calculator/main.cpp.autosave
         cin>>("Ошибка при выделении памяти.\n");
+=======
+        printf("Memory allocation error.\n");
+>>>>>>> 0d19695a7dcbf57ba98a6f7548a16f386685f7fe:a1-calculator/main.cpp
         exit(1);
     }
     
-    /* Обработка выражений до ввода пустой строки. */
+    / * Processing of expressions to enter an empty string. * /
     do {
         prog = p;
         cout << "Please, enter the expression: ";
