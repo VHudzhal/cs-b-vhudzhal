@@ -7,9 +7,21 @@
     <x>0</x>
     <y>0</y>
     <width>719</width>
+<<<<<<< HEAD
     <height>484</height>
    </rect>
   </property>
+=======
+    <height>665</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>665</height>
+   </size>
+  </property>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -18,7 +30,11 @@
     <property name="geometry">
      <rect>
       <x>130</x>
+<<<<<<< HEAD
       <y>460</y>
+=======
+      <y>630</y>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
       <width>108</width>
       <height>15</height>
      </rect>
@@ -28,7 +44,11 @@
     <property name="geometry">
      <rect>
       <x>130</x>
+<<<<<<< HEAD
       <y>440</y>
+=======
+      <y>610</y>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
       <width>108</width>
       <height>21</height>
      </rect>
@@ -41,7 +61,11 @@
     <property name="geometry">
      <rect>
       <x>10</x>
+<<<<<<< HEAD
       <y>440</y>
+=======
+      <y>610</y>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
       <width>108</width>
       <height>15</height>
      </rect>
@@ -54,7 +78,11 @@
     <property name="geometry">
      <rect>
       <x>10</x>
+<<<<<<< HEAD
       <y>460</y>
+=======
+      <y>630</y>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
       <width>108</width>
       <height>16</height>
      </rect>
@@ -64,9 +92,15 @@
     <property name="geometry">
      <rect>
       <x>0</x>
+<<<<<<< HEAD
       <y>10</y>
       <width>681</width>
       <height>431</height>
+=======
+      <y>0</y>
+      <width>701</width>
+      <height>591</height>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
      </rect>
     </property>
     <property name="baseSize">
@@ -89,7 +123,11 @@
     <property name="geometry">
      <rect>
       <x>260</x>
+<<<<<<< HEAD
       <y>450</y>
+=======
+      <y>620</y>
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
       <width>87</width>
       <height>27</height>
      </rect>

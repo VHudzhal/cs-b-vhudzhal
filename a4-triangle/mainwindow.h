@@ -24,6 +24,7 @@ void on_drawButton_clicked();
 
 private:
     Ui::MainWindow *ui;
+<<<<<<< HEAD
     QString *str;
     QString *str1;
     QLineEdit *lineEdit;
@@ -31,5 +32,13 @@ private:
     QLabel *outPut;
     QPushButton *drawButton;
     QWidget *widget;
+=======
+
+    QPixmap H;
+    QPainter paint;
+    QPen pen;
+QColor getRandColor();
+
+>>>>>>> f11695e941634871664633494ee95e0b9997c2a4
 };
 #endif // MAINWINDOW_H
