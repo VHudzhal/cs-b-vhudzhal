@@ -1,1 +1,0 @@
-Construction wood is made from zero level (ie - from the initial frequency) to the top of the tree. Always folded pair of minimum frequency. Coding is done from the top of the tree to the leaves, that is - to the letters of a string, sorted by ascending frequency (in reverse order from the tree construction).
