@@ -4,180 +4,234 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <cmath>
 #define DELIMITER 1
 #define VARIABLE  2
 #define NUMBER    3
 using namespace std;
 
-char *prog; /* pointer to the test expression */
+char *prog; /* holds expression to be analyzed */
 char token[80];
 char tok_type;
 
-double vars[26] = { /* custom variables 26 ,  A-Z */
+double vars[26] = { /* 26 user variables,  A-Z */
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                   };
 
-void eval_exp(double *answer), eval_exp2(double *answer);
+void eval_exp(double *result), eval_exp2(double *result);
 void eval_exp1(double *result);
-void eval_exp3(double *answer), eval_exp4(double *answer);
-void eval_exp5(double *answer), eval_exp6(double *answer);
-void atom(double *answer);
+void eval_exp3(double *result), eval_exp4(double *result);
+void eval_exp5(double *result), eval_exp7(double *result);
+//void eval_exp6(double *result), eval_exp5(double *result);
+void eval_exp7(double *result), eval_exp5(double *result);
+void atom(double *result);
 void get_token(void), putback(void);
 void serror(int error);
 double find_var(char *s);
+double factorial(int operand);
 int isdelim(char c);
 
-/* The entry point of the Analyzer */
-void eval_exp(double *answer)
+/* Точка входа анализатора. */
+void eval_exp(double *result)
 {
     get_token();
     if(!*token) {
         serror(2);
         return;
     }
-    eval_exp1(answer);
-    if(*token) serror(0); /* latest token must be zero */
+    eval_exp1(result);
+    if(*token) serror(0); /* последня лексема должна быть нулем */
 }
 
-/* The processing of the assignment */
-void eval_exp1(double *answer)
+/* Обработка присваивания. */
+void eval_exp1(double *result)
 {
     int slot;
     char ttok_type;
     char temp_token[80];
-    
+
     if(tok_type == VARIABLE) {
-        /* Save the old token */
+        /* сохранить старую лексему */
         strcpy(temp_token, token);
         ttok_type = tok_type;
-        /* calculate the index variable */
+        /* вычислить индекс переменной */
         slot = toupper(*token) - 'A';
-        
+
         get_token();
         if(*token != '=') {
-            cin.putback(ttok_type); /* return the current token */
-            /* restore the old token -  it is not assignment */
+            cin.putback(ttok_type); /* вернуть текущую лексему */
+            /* восстановить старую лексему - это не присваивание */
             strcpy(token, temp_token);
             tok_type = ttok_type;
         }
         else {
-            get_token(); /* get next subexpression */
-            eval_exp2(answer);
-            vars[slot] = *answer;
+            get_token(); /* получить следующую часть выражения */
+            eval_exp2(result);
+            vars[slot] = *result;
             return;
         }
     }
-    eval_exp2(answer);
+    eval_exp2(result);
 }
 
-/* Addition or subtraction of two terms. */
-void eval_exp2(double *answer)
+/* Сложение или вычитание двух слагаемых. */
+void eval_exp2(double *result)
 {
     register char op;
     double temp;
-    
-    eval_exp3(answer);
+
+    eval_exp3(result);
     while((op = *token) == '+' || op == '-') {
         get_token();
         eval_exp3(&temp);
         switch(op) {
         case '-':
-            *answer -= temp;
+            *result-= temp;
             break;
         case '+':
-            *answer += temp;
+            *result+= temp;
             break;
         }
     }
 }
 
-/* Multiplication or division of two factors. */
-void eval_exp3(double *answer)
+/* Умножение или деление двух множителей. */
+void eval_exp3(double *result)
 {
     register char op;
     double temp;
-    
-    eval_exp4(answer);
+
+    eval_exp4(result);
     while((op = *token) == '*' || op == '/' || op == '%') {
         get_token();
         eval_exp4(&temp);
         switch(op) {
         case '*':
-            *answer *= temp;
+            *result*= temp;
             break;
         case '/':
             if(temp == 0.0) {
-                serror(3); /* Division by zero */
-                *answer = 0.0;
-            } else *answer /= temp;
+                serror(3); /* деление на ноль */
+                *result= 0.0;
+            } else *result/= temp;
             break;
         case '%':
-            *answer = (int) *answer % (int) temp;
+            *result= (int) *result% (int) temp;
             break;
         }
     }
 }
 
-/* Exponentiation process */
-void eval_exp4(double *answer)
+/* Возведение в степень */
+void eval_exp4(double *result)
 {
     double temp, ex;
     register int t;
-    
-    eval_exp5(answer);
+
+    eval_exp5(result);
     if(*token == '^') {
         get_token();
         eval_exp4(&temp);
-        ex = *answer;
+        ex = *result;
         if(temp==0.0) {
-            *answer = 1.0;
-            return;
+            serror(4);
         }
         for(t=temp-1; t>0; --t)
-            *answer *= (double)ex;
+            *result*= (double)ex;
     }
 }
 
-/ * The calculation of the unary + and -. * /
-void eval_exp5(double *answer)
+/* Вычисление унарного + и -. */
+void eval_exp5(double *result)
 {
     register char  op;
-    
+
     op = 0;
-    if((tok_type == DELIMITER) && *token=='+' || *token == '-') {
+    if(((tok_type == DELIMITER) && *token=='+') || *token == '-') {
         op = *token;
         get_token();
     }
-    eval_exp6(answer);
-    if(op == '-') *answer = -(*answer);
+    eval_exp7(result);
+    if(op == '-') *result= -(*result);
+
+}
+/*Вычисление кореня числа*/
+void eval_exp6(double *result)
+{
+    double temp;
+    register char op = *token;
+    eval_exp6(result);
+    while(op  == 'sqrt' || op == 'sin' || op == 'cos' ||op == 'log' || op == 'tan') {
+        get_token();
+        eval_exp6(&temp);
+        while(true) {
+            if(op == 'sqrt'){
+                if(temp < 0.0) {
+                    serror(4); /*  */
+                }
+                *result= sqrt(temp);}
+            else if(op == 'sin')
+            {
+                *result = sin(temp);
+
+            }
+            else if(op == 'cos')
+            {
+                *result = cos(temp);
+            }
+            else  if(op == 'tan')
+            {
+                *result = tan(temp);
+            }
+            else  if(op == '!')
+            {
+
+                *result = factorial((int)temp);
+            }
+            else  if(op == 'log')
+            {
+
+                *result = log2(temp);
+            }
+        }
+    }
 }
 
-/* Processing of expression in brackets. */
-void eval_exp6(double *answer)
+/* Обработка выражения в скобках. */
+void eval_exp7(double *result)
 {
     if((*token == '(')) {
         get_token();
-        eval_exp2(answer);
+        eval_exp2(result);
         if(*token != ')')
             serror(1);
         get_token();
     }
-    else atom(answer);
+    else atom(result);
 }
 
-/ * Get the value of a number or variable. * /
-void atom(double *answer)
+double factorial(int operand) {
+    /* Calculate factorial */
+    if(operand==0){
+        return 0;
+    }
+    for(int i = operand-1;i!=0;i--){
+        operand *= i;
+    }
+    return (double) operand;
+}
+/* Получение значения числа или переменной. */
+void atom(double *result)
 {
     switch(tok_type) {
     case VARIABLE:
-        *answer = find_var(token);
+        *result= find_var(token);
         get_token();
         return;
     case NUMBER:
-        *answer = atof(token);
+        *result= atof(token);
         get_token();
         return;
     default:
@@ -185,44 +239,46 @@ void atom(double *answer)
     }
 }
 
-/ * Return the tokens in the input stream. * /
+/* Возврат лексемы во входной поток. */
 void putback(void)
 {
     char *t;
-    
+
     t = token;
     for(; *t; t++) prog--;
 }
 
-/ * Display a syntax error. * /
+/* Отображение сообщения о синтаксической ошибке. */
 void serror(int error)
 {
-    static char *e[]= {
+    const char *e[]= {
         "Syntax error",
         "Unbalanced parentheses",
         "No expression",
-        "Division by zero"
+        "Division by zero",
+        "Root value is less than zero"
+
     };
-    cout << "%s\n" << e[error] << endl;
+    printf("%s\n", e[error]);
 }
 
-/ * Get next token. * /
+/* Получение очередной лексемы. */
 void get_token(void)
 {
     register char *temp;
-    
+
     tok_type = 0;
     temp = token;
     *temp = '\0';
-    
-    if(!*prog) return; / * End of the expression * /
-    
-    while(*prog!='\n'&& isspace(*prog)) ++prog; / * Skip white space,
-                                                tabs, and an empty string * /
-    
-    if(strchr("+-*/%^=()", *prog)){
+
+    if(!*prog) return; /* конец выражения */
+
+    while(*prog!='\n'&& isspace(*prog)) ++prog; /* пропустить пробелы,
+                  символы табуляции и пустой строки */
+
+    if(strchr("+-*/%^=()_", *prog) || strchr("s",*prog) || strchr("c", *prog)){
         tok_type = DELIMITER;
-        /* move to next character */
+        /* перейти к следующему символу */
         *temp++ = *prog++;
     }
     else if(isalpha(*prog)) {
@@ -233,19 +289,18 @@ void get_token(void)
         while(!isdelim(*prog)) *temp++ = *prog++;
         tok_type = NUMBER;
     }
-    
+
     *temp = '\0';
 }
 
-/* Return true if c is a separator. */
+// Возвращение значения ИСТИНА, если с является разделителем.
 int isdelim(char c)
 {
-    if(strchr(" +-/*%^=()", c) || c==9 || c=='\r' || c==0)
+    if(strchr(" +-/*%^=()_", c) || strchr("s",*prog) || strchr("c", *prog)|| c==9 || c=='\r' || c==0)
         return 1;
     return 0;
 }
-
-/ * Get the value of a variable. * /
+// Get the value of a variable.
 double find_var(char *s)
 {
     if(!isalpha(*s)){
@@ -257,24 +312,24 @@ double find_var(char *s)
 
 int main(void)
 {
-    double answer;
+    double result;
     char *p;
-    
+
     p = (char *) malloc(100);
     if(!p) {
-        printf("Memory allocation error.\n");
+        cout << "Ошибка при выделении памяти.\n";
         exit(1);
     }
-    
-    / * Processing of expressions to enter an empty string. * /
+
+    /* Обработка выражений до ввода пустой строки. */
     do {
         prog = p;
         cout << "Please, enter the expression: ";
         gets(prog);
         if(!*prog) break;
-        eval_exp(&answer);
-        cout << "The result is: " << answer << endl;
+        eval_exp(&result);
+        cout << "The result is: " << result<< endl;
     } while(*p);
-    
+
     return 0;
 }
