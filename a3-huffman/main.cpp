@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QTextStream>
 using namespace std;
-/*структуры или записи/structure or recording*/
+/*structure or recording*/
 struct node
 {
     unsigned char ch;
@@ -17,7 +17,7 @@ struct node
 
 union code
 {
-    unsigned char varContCode;//variable contains code for recording the compressed file/переменная содержащая код для записи в сжатый файл
+    unsigned char varContCode;//variable contains code for recording the compressed file
 
     struct byte
     {
@@ -33,7 +33,7 @@ union code
     byte;
 };
 
-/* recursive function to create Huffman tree/рeкурсивная функция создания дерева Хаффмана*/
+/* recursive function to create Huffman tree*/
 node *makeTree(node *pnode[],int k)
 {
     node *temp;
@@ -45,7 +45,7 @@ node *makeTree(node *pnode[],int k)
 
     if(k==2)
         return temp;
-    else //Adding to the array to the right place Huffman tree element/внесение в массив в нужное место элемента дерева Хаффмана
+    else //Adding to the array to the right place Huffman tree element
     {
         for(int i=0;i<k;i++)
             if (temp->freq>pnode[i]->freq)
@@ -60,7 +60,7 @@ node *makeTree(node *pnode[],int k)
     return makeTree(pnode,k-1);
 }
 
-/*The recursive encoding function/Рекурсивная функция кодирования*/
+/*The recursive encoding function*/
 void makeCodes(node *root)
 {
     if(root->left)
@@ -80,7 +80,7 @@ void makeCodes(node *root)
 
 int main ()
 {
-    FILE *fp,*fp2,*fp3; //pointers to files/указатели на файлы
+    FILE *fp,*fp2,*fp3; //pointers to files
     setlocale(LC_ALL,"Rus");
     char  infile[20];
 
@@ -89,33 +89,31 @@ int main ()
     fflush (stdin);
     gets(infile);
     fp = fopen(infile,"r");
-    //Processing file read errors/Обработка ошибок чтения файла
+    //Processing file read errors/
     if (fp==NULL)
     {
         puts ("\nCould not open file");
         getchar();
-        exit (1); //Exit with exit code 1/Выйти с кодом завершения 1
+        exit (1); //Exit with exit code 1
     }
     fflush(stdin);
     getchar();
-    fp2 = fopen("output.txt","wb");//opening a file for writing binary code/открытие файла для записи бинарного кода
-    fp3=fopen("teemp.txt","wb");//opening a file for writing the compressed file/открытие файла для записи сжатого файла
+    fp2 = fopen("output.txt","wb");//opening a file for writing binary code
+    fp3=fopen("teemp.txt","wb");//opening a file for writing the compressed file
 
-    int chh;  // variable for reading information from a file/переменная для чтения информации из файла
-    int k=0; //the counter of the number of different letters, unique characters/счётчик количества различных букв, уникальных символов
-    int kk=0; // the counter of the number of all the characters in a file/счётчик количества всех знаков в файле
-    int fsize2=0;//the counter of the number of characters from 0 and 1 in the intermediate file teemp/ счётчик количества символов из 0 и 1 в промежуточном файле teemp
-    int ts;//tail file size (that is not a multiple of 8 in the intermediate file)/размер хвоста файла (то, что не кратно 8 в промежуточном файле)
-    int kolvo[256]={0};// initialize an array of the number of unique charactersинициализируем массив количества уникальных символов
-    node simbols[256]={0}; //initialize an array of records/инициализируем массив записей
-    node *pnode[256]; //initialize an array of pointers to records/инициализируем массив указателей на записи
-    float frequencySum=0;//сумма частот встречаемости
+    int chh;  // variable for reading information from a file
+    int k=0; //the counter of the number of different letters, unique characters
+    int kk=0; // the counter of the number of all the characters in a file
+    int fsize2=0;//the counter of the number of characters from 0 and 1 in the intermediate file teemp
+    int ts;//tail file size (that is not a multiple of 8 in the intermediate file)
+    int kolvo[256]={0};// initialize an array of the number of unique characters
+    node simbols[256]={0}; //initialize an array of records
+    node *pnode[256]; //initialize an array of pointers to records
+    float frequencySum=0;//Sum of the frequencies of occurrence
     int mes[8];//array of 0 and 1
-    char j=0;//An additional variable/дополнительная переменная
-    //    node *nodebols=(node*)malloc(k*sizeof(node));//создание динамического массива структур simbols
-    //    node **psum=(node**)malloc(k*sizeof(node*));//создание динамического массива указателей на simbols
+    char j=0;//An additional variable
 
-    //Byte-by-byte reading file and drawing up table of occurrence/ Побайтное чтение файла и составление таблицы встречаемости
+    /*Byte-by-byte reading file and drawing up table of occurrence*/
     while((chh=fgetc(fp))!=EOF)
     {
         for(int j=0; j<256; j++)
@@ -136,14 +134,14 @@ int main ()
         }
     }
 
-    //Calculation of frequency of occurrence/ Рассчёт частоты встречаемости
+    //Calculation of frequency of occurrence
     for(int i=0;i<k;i++)
         simbols[i].freq=(float)kolvo[i]/kk;
 
-    for(int i=0;i<k;i++) // entering of the address of records in an array of indexes/занесение адреса записей в массив указателей
+    for(int i=0;i<k;i++) // entering of the address of records in an array of indexes
         pnode[i]=&simbols[i];
 
-    //Sort descending/Сортировка по убыванию
+    //Sort descending
     node tempp;
     for(int i=1;i<k;i++)
         for(int j=0;j<k-1;j++)
@@ -161,12 +159,12 @@ int main ()
     }
     printf("\n Words = %d\tfrequencySum=%f\n",kk,frequencySum);
 
-    node *root=makeTree(pnode,k);//call options to create Huffman tree/вызов функции создания дерева Хаффмана
+    node *root=makeTree(pnode,k);//call options to create Huffman tree
 
-    makeCodes(root);//receive call function code/вызов функции получения кода
+    makeCodes(root);//receive call function code
 
-    rewind(fp);//return a pointer to a file in the file beginning/возвращаем указатель в файле в начало файла
-    //cycle for reading the source file code and write functions obtained in the intermediate file/  цикл для чтения исходного файла, и записи полученных в функциях кодов в промежуточный файл
+    rewind(fp);//return a pointer to a file in the file beginning
+    //cycle for reading the source file code and write functions obtained in the intermediate file
     while((chh=fgetc(fp))!=EOF)
     {
         for(int i=0;i<k;i++)
@@ -175,30 +173,30 @@ int main ()
     }
     fclose(fp2);
     {
-        // Re-open the file with a binary code, but now reading/ Заново открываем файл с бинарным кодом, но теперь для чтения
+        // Re-open the file with a binary code, but now reading
         int i=0;
         fp2=fopen("teemp.txt","rb");
-        //Read the size of the binary file (the number of characters in it)/Считываем размер бинарного файла(количество символов в нём)
+        //Read the size of the binary file (the number of characters in it)
         while((chh=fgetc(fp2))!=EOF)
             fsize2++;
 
-        ts=fsize2%8;//find the remainder, the number of characters are not multiples of 8 (tail)/находим остаток, количество символов не кратных 8 (хвост)
+        ts=fsize2%8;//find the remainder, the number of characters are not multiples of 8 (tail)
 
-        // Form the header byte compressed file through the field/формируем заголовок сжатого файла через поля байтов
-        fwrite("compresing!!!",sizeof(char),24,fp3);//conditional signature/условная подпись
-        fwrite(&k,sizeof(int),1,fp3);//the number of unique characters/количество уникальных символов
-        fwrite(&ts,sizeof(int),1,fp3);//the value of the tail/величина хвоста
-        //Written to a compressed file occurrence table/Записываем в сжатый файл таблицу встречаемости
+        // Form the header byte compressed file through the field
+        fwrite("compresing!!!",sizeof(char),24,fp3);//conditional signature
+        fwrite(&k,sizeof(int),1,fp3);//the number of unique characters
+        fwrite(&ts,sizeof(int),1,fp3);//the value of the tail
+        //Written to a compressed file occurrence table
         for(i=0;i<k;i++)
         {
             fwrite(&simbols[i].ch,sizeof(node),1,fp3);
             fwrite(&simbols[i].freq,sizeof(node),1,fp3);
         }
 
-        rewind(fp2);//return a pointer to an intermediate file at the beginning of the file/возвращаем указатель в промежуточном файле в начало файла
+        rewind(fp2);//return a pointer to an intermediate file at the beginning of the file
 
-        union code code1;//инициализируем переменную code1
-        /*Read binary file, populating it consistently every 8 elements in an array for subsequent bit manipulation in uniting union/ Читаем бинарный файл, занося последовательно каждые 8 элементов в массив для последующей побитовой обработки в объединении union*/
+        union code code1;//initialize variable code1
+        /*Read binary file, populating it consistently every 8 elements in an array for subsequent bit manipulation in uniting union*/
         j=0;
         for(int i=0;i<fsize2-ts;i++)
         {
@@ -218,7 +216,7 @@ int main ()
             }
             j++;
         }
-        //Write the tail/Записываем хвост
+        //Write the tail
         j=0;
         for(int i=0;i<=ts;i++)
         {
