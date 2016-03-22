@@ -1,336 +1,289 @@
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
-#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <cmath>
-#define DELIMITER 1
-#define VARIABLE  2
-#define NUMBER    3
+#include <iostream>
+#include <QFile>
+#include <QTextStream>
 using namespace std;
-
-char *prog; /* holds expression to be analyzed */
-char token[80];
-char tok_type;
-
-double vars[26] = { /* 26 user variables,  A-Z */
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-                  };
-
-void eval_exp(double *result), eval_exp2(double *result);
-void eval_exp1(double *result);
-void eval_exp3(double *result), eval_exp4(double *result);
-void eval_exp5(double *result), eval_exp7(double *result);
-//void eval_exp6(double *result), eval_exp5(double *result);
-void eval_exp7(double *result), eval_exp5(double *result);
-void atom(double *result);
-void get_token(void), putback(void);
-void serror(int error);
-double find_var(char *s);
-double factorial(int operand);
-int isdelim(char c);
-
-/* Entry Point Analyzer/Точка входа анализатора. */
-void eval_exp(double *result)
+/*структуры или записи/structure or recording*/
+struct node
 {
-    get_token();
-    if(!*token) {
-        serror(2);
-        return;
+    unsigned char ch;
+    float freq;
+    char code[255];
+    node *left;
+    node *right;
+};
+
+union code
+{
+    unsigned char varContCode;//variable contains code for recording the compressed file/переменная содержащая код для записи в сжатый файл
+
+    struct byte
+    {
+        unsigned b1:1;
+        unsigned b2:1;
+        unsigned b3:1;
+        unsigned b4:1;
+        unsigned b5:1;
+        unsigned b6:1;
+        unsigned b7:1;
+        unsigned b8:1;
     }
-    eval_exp1(result);
-    if(*token) serror(0); /* the last token must be zero/последня лексема должна быть нулем */
-}
+    byte;
+};
 
-/* Assignment handling/Обработка присваивания. */
-void eval_exp1(double *result)
+/* recursive function to create Huffman tree/рeкурсивная функция создания дерева Хаффмана*/
+node *makeTree(node *pnode[],int k)
 {
-    int slot;
-    char ttok_type;
-    char temp_token[80];
+    node *temp;
+    temp=(node*)malloc(sizeof(node));
+    temp->freq=pnode[k-1]->freq+pnode[k-2]->freq;
+    temp->code[0]=0;
+    temp->left=pnode[k-1];
+    temp->right=pnode[k-2];
 
-    if(tok_type == VARIABLE) {
-        /* saving old tokens/сохраниние старой лексемы */
-        strcpy(temp_token, token);
-        ttok_type = tok_type;
-        /*the computation of the index variable/ вычисление индекса переменной */
-        slot = toupper(*token) - 'A';
-
-        get_token();
-        if(*token != '=') {
-            cin.putback(ttok_type); /* return the current token/ возвращение текущей лексемы */
-            /*restoring the old lexeme(it is not assignment)/  восстановление старой лексемы - это не присваивание */
-            strcpy(token, temp_token);
-            tok_type = ttok_type;
-        }
-        else {
-            get_token(); /* getting the next subexpression/получение следующей части выражения */
-            eval_exp2(result);
-            vars[slot] = *result;
-            return;
-        }
-    }
-    eval_exp2(result);
-}
-
-/* Addition or subtraction of two terms/Сложение или вычитание двух слагаемых. */
-void eval_exp2(double *result)
-{
-    register char op;
-    double temp;
-
-    eval_exp3(result);
-    while((op = *token) == '+' || op == '-') {
-        get_token();
-        eval_exp3(&temp);
-        switch(op) {
-        case '-':
-            *result-= temp;
-            break;
-        case '+':
-            *result+= temp;
-            break;
-        }
-    }
-}
-
-/*Multiplication or division of two factors/ Умножение или деление двух множителей. */
-void eval_exp3(double *result)
-{
-    register char op;
-    double temp;
-
-    eval_exp4(result);
-    while((op = *token) == '*' || op == '/' || op == '%') {
-        get_token();
-        eval_exp4(&temp);
-        switch(op) {
-        case '*':
-            *result*= temp;
-            break;
-        case '/':
-            if(temp == 0.0) {
-                serror(3); /* division by zero/деление на ноль */
-                *result= 0.0;
-            } else *result/= temp;
-            break;
-        case '%':
-            *result= (int) *result% (int) temp;
-            break;
-        }
-    }
-}
-
-/*Exponentiation/ Возведение в степень */
-void eval_exp4(double *result)
-{
-    double temp, ex;
-    register int t;
-
-    eval_exp5(result);
-    if(*token == '^') {
-        get_token();
-        eval_exp4(&temp);
-        ex = *result;
-        if(temp==0.0) {
-            serror(4);
-        }
-        for(t=temp-1; t>0; --t)
-            *result*= (double)ex;
-    }
-}
-
-/*Calculation of the unary + and-/Вычисление унарного + и -. */
-void eval_exp5(double *result)
-{
-    register char  op;
-
-    op = 0;
-    if(((tok_type == DELIMITER) && *token=='+') || *token == '-') {
-        op = *token;
-        get_token();
-    }
-    eval_exp7(result);
-    if(op == '-') *result= -(*result);
-
-}
-/*The calculation of the number of roots, trigonometric functions/ Вычисление корня числа, тригонометрических функций*/
-void eval_exp6(double *result)
-{
-    double temp;
-    register char op = *token;
-    eval_exp6(result);
-    while(op  == 'sqrt' || op == 'sin' || op == 'cos' ||op == 'log' || op == 'tan') {
-        get_token();
-        eval_exp6(&temp);
-        while(true) {
-            if(op == 'sqrt'){
-                if(temp < 0.0) {
-                    serror(4); /*  */
-                }
-                *result= sqrt(temp);}
-            else if(op == 'sin')
+    if(k==2)
+        return temp;
+    else //Adding to the array to the right place Huffman tree element/внесение в массив в нужное место элемента дерева Хаффмана
+    {
+        for(int i=0;i<k;i++)
+            if (temp->freq>pnode[i]->freq)
             {
-                *result = sin(temp);
+                for(int j=k-1;j>i;j--)
+                    pnode[j]=pnode[j-1];
 
+                pnode[i]=temp;
+                break;
             }
-            else if(op == 'cos')
-            {
-                *result = cos(temp);
-            }
-            else  if(op == 'tan')
-            {
-                *result = tan(temp);
-            }
-            else  if(op == '!')
-            {
+    }
+    return makeTree(pnode,k-1);
+}
 
-                *result = factorial((int)temp);
-            }
-            else  if(op == 'log')
-            {
+/*The recursive encoding function/Рекурсивная функция кодирования*/
+void makeCodes(node *root)
+{
+    if(root->left)
+    {
+        strcpy(root->left->code,root->code);
+        strcat(root->left->code,"0");
+        makeCodes(root->left);
+    }
+    if(root->right)
+    {
+        strcpy(root->right->code,root->code);
+        strcat(root->right->code,"1");
+        makeCodes(root->right);
+    }
+}
 
-                *result = log2(temp);
+
+int main ()
+{
+    FILE *fp,*fp2,*fp3; //pointers to files/указатели на файлы
+    setlocale(LC_ALL,"Rus");
+    char  infile[20];
+
+    printf("Please, enter the name of the file: \n");
+
+    fflush (stdin);
+    gets(infile);
+    fp = fopen(infile,"r");
+    //Processing file read errors/Обработка ошибок чтения файла
+    if (fp==NULL)
+    {
+        puts ("\nCould not open file");
+        getchar();
+        exit (1); //Exit with exit code 1/Выйти с кодом завершения 1
+    }
+    fflush(stdin);
+    getchar();
+    fp2 = fopen("output.txt","wb");//opening a file for writing binary code/открытие файла для записи бинарного кода
+    fp3=fopen("teemp.txt","wb");//opening a file for writing the compressed file/открытие файла для записи сжатого файла
+
+    int chh;  // variable for reading information from a file/переменная для чтения информации из файла
+    int k=0; //the counter of the number of different letters, unique characters/счётчик количества различных букв, уникальных символов
+    int kk=0; // the counter of the number of all the characters in a file/счётчик количества всех знаков в файле
+    int fsize2=0;//the counter of the number of characters from 0 and 1 in the intermediate file teemp/ счётчик количества символов из 0 и 1 в промежуточном файле teemp
+    int ts;//tail file size (that is not a multiple of 8 in the intermediate file)/размер хвоста файла (то, что не кратно 8 в промежуточном файле)
+    int kolvo[256]={0};// initialize an array of the number of unique charactersинициализируем массив количества уникальных символов
+    node simbols[256]={0}; //initialize an array of records/инициализируем массив записей
+    node *pnode[256]; //initialize an array of pointers to records/инициализируем массив указателей на записи
+    float frequencySum=0;//сумма частот встречаемости
+    int mes[8];//array of 0 and 1
+    char j=0;//An additional variable/дополнительная переменная
+    //    node *nodebols=(node*)malloc(k*sizeof(node));//создание динамического массива структур simbols
+    //    node **psum=(node**)malloc(k*sizeof(node*));//создание динамического массива указателей на simbols
+
+    //Byte-by-byte reading file and drawing up table of occurrence/ Побайтное чтение файла и составление таблицы встречаемости
+    while((chh=fgetc(fp))!=EOF)
+    {
+        for(int j=0; j<256; j++)
+        {
+            if (chh==simbols[j].ch)
+            {
+                kolvo[j]++;
+                kk++;
+                break;
+            }
+            if (simbols[j].ch==0)
+            {
+                simbols[j].ch=(unsigned char)chh;
+                kolvo[j]=1;
+                k++; kk++;
+                break;
             }
         }
     }
-}
 
-/*Processing expression in brackets/ Обработка выражения в скобках. */
-void eval_exp7(double *result)
-{
-    if((*token == '(')) {
-        get_token();
-        eval_exp2(result);
-        if(*token != ')')
-            serror(1);
-        get_token();
-    }
-    else atom(result);
-}
+    //Calculation of frequency of occurrence/ Рассчёт частоты встречаемости
+    for(int i=0;i<k;i++)
+        simbols[i].freq=(float)kolvo[i]/kk;
 
-double factorial(int operand) {
-    /* Calculate factorial */
-    if(operand==0){
-        return 0;
-    }
-    for(int i = operand-1;i!=0;i--){
-        operand *= i;
-    }
-    return (double) operand;
-}
+    for(int i=0;i<k;i++) // entering of the address of records in an array of indexes/занесение адреса записей в массив указателей
+        pnode[i]=&simbols[i];
 
-/*Retrieving the value of a number or a variable/ Получение значения числа или переменной . */
-void atom(double *result)
-{
-    switch(tok_type) {
-    case VARIABLE:
-        *result= find_var(token);
-        get_token();
-        return;
-    case NUMBER:
-        *result= atof(token);
-        get_token();
-        return;
+    //Sort descending/Сортировка по убыванию
+    node tempp;
+    for(int i=1;i<k;i++)
+        for(int j=0;j<k-1;j++)
+            if(simbols[j].freq<simbols[j+1].freq)
+            {
+                tempp=simbols[j];
+                simbols[j]=simbols[j+1];
+                simbols[j+1]=tempp;
+            }
+
+    for(int i=0;i<k;i++)
+    {
+        frequencySum+=simbols[i].freq;
+        printf("Ch= %d\tFreq= %f\tPPP= %c\t\n",simbols[i].ch,simbols[i].freq,pnode[i]->ch,i);
+    }
+    printf("\n Words = %d\tfrequencySum=%f\n",kk,frequencySum);
+
+    node *root=makeTree(pnode,k);//call options to create Huffman tree/вызов функции создания дерева Хаффмана
+
+    makeCodes(root);//receive call function code/вызов функции получения кода
+
+    rewind(fp);//return a pointer to a file in the file beginning/возвращаем указатель в файле в начало файла
+    //cycle for reading the source file code and write functions obtained in the intermediate file/  цикл для чтения исходного файла, и записи полученных в функциях кодов в промежуточный файл
+    while((chh=fgetc(fp))!=EOF)
+    {
+        for(int i=0;i<k;i++)
+            if(chh==simbols[i].ch)
+                fputs(simbols[i].code,fp2);
+    }
+    fclose(fp2);
+    {
+        // Re-open the file with a binary code, but now reading/ Заново открываем файл с бинарным кодом, но теперь для чтения
+        int i=0;
+        fp2=fopen("teemp.txt","rb");
+        //Read the size of the binary file (the number of characters in it)/Считываем размер бинарного файла(количество символов в нём)
+        while((chh=fgetc(fp2))!=EOF)
+            fsize2++;
+
+        ts=fsize2%8;//find the remainder, the number of characters are not multiples of 8 (tail)/находим остаток, количество символов не кратных 8 (хвост)
+
+        // Form the header byte compressed file through the field/формируем заголовок сжатого файла через поля байтов
+        fwrite("compresing!!!",sizeof(char),24,fp3);//conditional signature/условная подпись
+        fwrite(&k,sizeof(int),1,fp3);//the number of unique characters/количество уникальных символов
+        fwrite(&ts,sizeof(int),1,fp3);//the value of the tail/величина хвоста
+        //Written to a compressed file occurrence table/Записываем в сжатый файл таблицу встречаемости
+        for(i=0;i<k;i++)
+        {
+            fwrite(&simbols[i].ch,sizeof(node),1,fp3);
+            fwrite(&simbols[i].freq,sizeof(node),1,fp3);
+        }
+
+        rewind(fp2);//return a pointer to an intermediate file at the beginning of the file/возвращаем указатель в промежуточном файле в начало файла
+
+        union code code1;//инициализируем переменную code1
+        /*Read binary file, populating it consistently every 8 elements in an array for subsequent bit manipulation in uniting union/ Читаем бинарный файл, занося последовательно каждые 8 элементов в массив для последующей побитовой обработки в объединении union*/
+        j=0;
+        for(int i=0;i<fsize2-ts;i++)
+        {
+            mes[j]=fgetc(fp2);
+            if(j==8)
+            {
+                code1.byte.b1=mes[0]-'0';
+                code1.byte.b2=mes[1]-'0';
+                code1.byte.b3=mes[2]-'0';
+                code1.byte.b4=mes[3]-'0';
+                code1.byte.b5=mes[4]-'0';
+                code1.byte.b6=mes[5]-'0';
+                code1.byte.b7=mes[6]-'0';
+                code1.byte.b8=mes[7]-'0';
+                fputc(code1.varContCode,fp3);
+                j=0;
+            }
+            j++;
+        }
+        //Write the tail/Записываем хвост
+        j=0;
+        for(int i=0;i<=ts;i++)
+        {
+            mes[j]=fgetc(fp2);
+            if(j==ts)
+            {
+                code1.byte.b1=mes[0]-'0';
+                code1.byte.b2=mes[1]-'0';
+                code1.byte.b3=mes[2]-'0';
+                code1.byte.b4=mes[3]-'0';
+                code1.byte.b5=mes[4]-'0';
+                code1.byte.b6=mes[5]-'0';
+                code1.byte.b7=mes[6]-'0';
+                code1.byte.b8=mes[7]-'0';
+                fputc(code1.varContCode,fp3);
+            }
+            j++;
+        }
+    }
+
+    int choice;
+
+    printf  ("\n Please enter next command:\n");
+    cout<<"exit - close program\n";
+    cout<<"output - open and read file 'output.txt\n";
+    cout<<"teemp - open and read file 'teemp.txt' \n";
+    cin >> choice;
+
+    switch(choice)
+    {
+
+    case '1':
+    {
+        char outfile[20];
+        cin>>outfile;
+        fflush (stdin);
+        gets(outfile);
+        fp2 = fopen(outfile,"r+b");
+        if (fp2==NULL) {
+            printf ("\ncould not open file");
+            getchar();
+            exit (1); //Exit with exit code 1
+        }
+    }
+        break;
+
+    case '2':
+    {
+        char teempfile[30];
+        cin>>teempfile;
+        fflush (stdin);
+        gets(teempfile);
+        fp2 = fopen(teempfile,"r+b");
+        if (fp2==NULL) {
+            printf ("\ncould not open file");
+            getchar();
+            exit (1); //Exit with exit code 1
+            break;
+        }
     default:
-        serror(0);
+        {
+            fcloseall;
+            break;
+        }
+            return 0;
+        }
     }
-}
-
-/* Return tokens in the input stream/Возврат лексемы во входной поток. */
-void putback(void)
-{
-    char *t;
-
-    t = token;
-    for(; *t; t++) prog--;
-}
-
-/* Displays a syntax error/ Отображение сообщения о синтаксической ошибке. */
-void serror(int error)
-{
-    const char *e[]= {
-        "Syntax error",
-        "Unbalanced parentheses",
-        "No expression",
-        "Division by zero",
-        "Root value is less than zero"
-
-    };
-    printf("%s\n", e[error]);
-}
-
-/* Getting the next token/Получение очередной лексемы. */
-void get_token(void)
-{
-    register char *temp;
-
-    tok_type = 0;
-    temp = token;
-    *temp = '\0';
-
-    if(!*prog) return; /* expressions end/конец выражения */
-
-    while(*prog!='\n'&& isspace(*prog)) ++prog; /*skip spaces, tabs, and blank lines/ пропустить пробелы,
-                  символы табуляции и пустой строки */
-
-    if(strchr("+-*/%^=()_", *prog) || strchr("s",*prog) || strchr("c", *prog)){
-        tok_type = DELIMITER;
-        /*go to the next symbol/ перейти к следующему символу */
-        *temp++ = *prog++;
-    }
-    else if(isalpha(*prog)) {
-        while(!isdelim(*prog)) *temp++ = *prog++;
-        tok_type = VARIABLE;
-    }
-    else if(isdigit(*prog)) {
-        while(!isdelim(*prog)) *temp++ = *prog++;
-        tok_type = NUMBER;
-    }
-
-    *temp = '\0';
-}
-
-//  Return true if c is a separator./Возвращение значения ИСТИНА, если с является разделителем.
-int isdelim(char c)
-{
-    if(strchr(" +-/*%^=()_", c) || strchr("s",*prog) || strchr("c", *prog)|| c==9 || c=='\r' || c==0)
-        return 1;
-    return 0;
-}
-// Get the value of a variable.
-double find_var(char *s)
-{
-    if(!isalpha(*s)){
-        serror(1);
-        return 0.0;
-    }
-    return vars[toupper(*token)-'A'];
-}
-
-int main(void)
-{
-    double result;
-    char *p;
-
-    p = (char *) malloc(100);
-    if(!p) {
-        cout << "Failure to allocate memory/Ошибка при выделении памяти.\n";
-        exit(1);
-    }
-
-    /* Expression Processing prior to entering a blank line/Обработка выражений до ввода пустой строки. */
-    do {
-        prog = p;
-        cout << "Please, enter the expression: ";
-        gets(prog);
-        if(!*prog) break;
-        eval_exp(&result);
-        cout << "The result is: " << result<< endl;
-    } while(*p);
-
-    return 0;
 }
