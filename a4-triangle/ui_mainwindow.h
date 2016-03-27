@@ -37,17 +37,13 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-<<<<<<< HEAD
         MainWindow->resize(719, 484);
-=======
         MainWindow->resize(719, 665);
         MainWindow->setMaximumSize(QSize(16777215, 665));
->>>>>>> f11695e941634871664633494ee95e0b9997c2a4
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         lineEdit_2 = new QLineEdit(centralWidget);
         lineEdit_2->setObjectName(QStringLiteral("lineEdit_2"));
-<<<<<<< HEAD
         lineEdit_2->setGeometry(QRect(130, 460, 108, 15));
         label_2 = new QLabel(centralWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
@@ -61,7 +57,6 @@ public:
         outPut = new QLabel(centralWidget);
         outPut->setObjectName(QStringLiteral("outPut"));
         outPut->setGeometry(QRect(0, 10, 681, 431));
-=======
         lineEdit_2->setGeometry(QRect(130, 630, 108, 15));
         label_2 = new QLabel(centralWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
@@ -75,17 +70,13 @@ public:
         outPut = new QLabel(centralWidget);
         outPut->setObjectName(QStringLiteral("outPut"));
         outPut->setGeometry(QRect(0, 0, 701, 591));
->>>>>>> f11695e941634871664633494ee95e0b9997c2a4
         outPut->setBaseSize(QSize(20, 50));
         outPut->setAutoFillBackground(false);
         outPut->setStyleSheet(QStringLiteral("color: rgb(170, 0, 0);"));
         drawButton = new QPushButton(centralWidget);
         drawButton->setObjectName(QStringLiteral("drawButton"));
-<<<<<<< HEAD
         drawButton->setGeometry(QRect(260, 450, 87, 27));
-=======
         drawButton->setGeometry(QRect(260, 620, 87, 27));
->>>>>>> f11695e941634871664633494ee95e0b9997c2a4
         MainWindow->setCentralWidget(centralWidget);
 
         retranslateUi(MainWindow);
