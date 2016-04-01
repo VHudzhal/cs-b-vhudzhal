@@ -16,11 +16,8 @@ class MyList{
     };
     Node* pHead, *pPrev;
     int countElem;
-
     void merge(Node *a, Node *b, Node **c);
-
     void split(Node *src, Node **low, Node **high);
-
     void mergeSort(Node **ppHead);
 
 public:
@@ -43,24 +40,18 @@ public:
     public:
         iterator(): itPtr(0){}
         iterator(Node * n): itPtr(n){}
-
-
         Node * get(int index = 0){
             int i = 0;
             while (i < index && itPtr->next) {
                 itPtr = itPtr->next;
-                i++;
-
-            }
+            i++;
+        }
             return itPtr;
         }
-
-
 
         T & operator*(){
             return itPtr->value;
         }
-
         T * operator->(){
             return itPtr->value;
         }
@@ -84,6 +75,7 @@ public:
             return itPtr != it.itPtr;
         }
     };
+
     class const_iterator{
     private:
         const Node * itPtr;
@@ -92,7 +84,6 @@ public:
             : itPtr(0){}
         const_iterator (Node *n)
             : itPtr(n){}
-
 
         T operator*(){
             return itPtr->value;
@@ -127,7 +118,6 @@ public:
 
     //Iterator beginning of the list.
     iterator begin();
-
 
     //Iterator end of the list.
     iterator end();
