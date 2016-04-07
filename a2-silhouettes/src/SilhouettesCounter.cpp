@@ -12,6 +12,8 @@ const int BACKGROUND_COLOR = 13750737; // color for background (HEX #d1d1d1)
 //@param fileName - name of the input image
 int countingSilhouettes(string fileName);
 
+/*Binarization is the process of converting a pixel image to a binary image.*/
+void Binarization(GBufferedImage *bufImg,  int **bitMap);
 /*
 *@param bitMap - a bitmap of image
 *@param bufImage - matrix of colored pixels
@@ -19,18 +21,15 @@ int countingSilhouettes(string fileName);
 *@param imgHeight - height of the image
 */
 
-/*Binarization is the process of converting a pixel image to a binary image.*/
-void Binarization(GBufferedImage *bufImg,  int **bitMap);
-
+void Fill(int x, int y, int oldVal, int newVal, int **bitMap, int W, int H, int &silhouetteSize);
 /*
 *@param x, y - coordinates of the bitmap
 *@param oldVal - label used for marking pixels of the silhouettes
 *@param newVal - label used for separation pixels of the silhouettes
 *@param silhouetteSize - the minimum size of the silhouette to be taken into account
 */
-void Fill(int x, int y, int oldVal, int newVal, int **bitMap, int W, int H, int &silhouetteSize);
 
-
+/*Binarization process*/
 void Binarization(GBufferedImage *bufImg,  int **bitMap)
 {
     int imgHeight = (int)bufImg->getHeight();
@@ -65,13 +64,13 @@ void Fill(int x, int y, int oldVal, int newVal, int **bitMap, int W, int H, int 
 
 
 int countingSilhouettes(string fileName) {
-    GBufferedImage *bufImg = new GBufferedImage(); //matrix size is the size of the image
+    GBufferedImage *bufImg = new GBufferedImage(0, 0, img->getWidth(), img->getHeight()); //matrix size is the size of the image
     bufImg->load(fileName);
     GImage *img;
     img = new GImage(fileName);
     //object window
-    GWindow gw(img->getWidth(), img->getHeight());// window size is the size of the image
-    gw.add(img);
+    GWindow window(img->getWidth(), img->getHeight());// window size is the size of the image
+    window.add(img);
     //buffer for image pixel reading
     bufImg->load(fileName);
     //image width and height
@@ -114,7 +113,6 @@ int countingSilhouettes(string fileName) {
     delete img;
     delete bufImg;
     return silhouettesOnImg;
-   // gw.close();
 }
 
 int main() {
