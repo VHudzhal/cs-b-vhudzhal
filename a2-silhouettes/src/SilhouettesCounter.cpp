@@ -4,8 +4,7 @@
 #include "gobjects.h"
 
 using namespace std;
-
-const int MIN_SILHOUETTE_SIZE = 100;// the minimum number of pixels required to determine the silhouette
+const int MIN_SIL_SIZE = 100;// the minimum number of pixels required to determine the silhouette
 const int BACKGROUND_COLOR = 13750737; // color for background (HEX #d1d1d1)
 //function prototypes
 
