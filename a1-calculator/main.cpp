@@ -20,12 +20,21 @@ double vars[26] = { /* custom variables 26 ,  A-Z */
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0
                   };
 
-void eval_exp(double *answer), eval_exp2(double *answer);
+void eval_exp(double *answer), 
+eval_exp2(double *answer)/*Addition or subtraction*/;
 void eval_exp1(double *result);
-void eval_exp3(double *answer), eval_exp4(double *answer);
-void eval_exp5(double *answer), eval_exp6(double *answer);
+//Multiplication or division function
+void eval_exp3(double *answer),
+eval_exp4(double *answer) /* Exponentiation process */;
+void eval_exp5(double *answer), 
+/*Function for working with processing of expression in brackets*/eval_exp6(double *answer);
+
+//Getting the value of a number or variable
 void atom(double *answer);
-void get_token(void), putback(void);
+//getting next token
+void get_token(void), 
+/*return tokens*/putback(void);
+//error processing
 void serror(int error);
 double find_var(char *s);
 int isdelim(char c);
@@ -58,8 +67,8 @@ void eval_exp1(double *answer)
         
         get_token();
         if(*token != '=') {
-            cin.putback(ttok_type); /* return the current token */
-            /* restore the old token -  it is not assignment */
+            cin.putback(ttok_type); /* return the current token
+             restore the old token -  it is not assignment */
             strcpy(token, temp_token);
             tok_type = ttok_type;
         }
@@ -141,7 +150,7 @@ void eval_exp4(double *answer)
     }
 }
 
-/ * The calculation of the unary + and -. * /
+/* The calculation of the unary + and -. */
 void eval_exp5(double *answer)
 {
     register char  op;
@@ -168,7 +177,7 @@ void eval_exp6(double *answer)
     else atom(answer);
 }
 
-/ * Get the value of a number or variable. * /
+/* Get the value of a number or variable.*/
 void atom(double *answer)
 {
     switch(tok_type) {
@@ -185,16 +194,15 @@ void atom(double *answer)
     }
 }
 
-/ * Return the tokens in the input stream. * /
+/* Return the tokens in the input stream. */
 void putback(void)
 {
     char *t;
-    
     t = token;
     for(; *t; t++) prog--;
 }
 
-/ * Display a syntax error. * /
+/* Display a syntax error. */
 void serror(int error)
 {
     static char *e[]= {
@@ -206,7 +214,7 @@ void serror(int error)
     cout << "%s\n" << e[error] << endl;
 }
 
-/ * Get next token. * /
+/* Get next token. */
 void get_token(void)
 {
     register char *temp;
@@ -215,10 +223,10 @@ void get_token(void)
     temp = token;
     *temp = '\0';
     
-    if(!*prog) return; / * End of the expression * /
+    if(!*prog) return; /* End of the expression */
     
-    while(*prog!='\n'&& isspace(*prog)) ++prog; / * Skip white space,
-                                                tabs, and an empty string * /
+    while(*prog!='\n'&& isspace(*prog)) ++prog; /* Skip white space,
+                                                tabs, and an empty string */
     
     if(strchr("+-*/%^=()", *prog)){
         tok_type = DELIMITER;
@@ -245,7 +253,7 @@ int isdelim(char c)
     return 0;
 }
 
-/ * Get the value of a variable. * /
+/* Get the value of a variable. */
 double find_var(char *s)
 {
     if(!isalpha(*s)){
@@ -265,8 +273,7 @@ int main(void)
         printf("Memory allocation error.\n");
         exit(1);
     }
-    
-    / * Processing of expressions to enter an empty string. * /
+    /* Processing of expressions to enter an empty string. */
     do {
         prog = p;
         cout << "Please, enter the expression: ";
@@ -275,6 +282,5 @@ int main(void)
         eval_exp(&answer);
         cout << "The result is: " << answer << endl;
     } while(*p);
-    
     return 0;
 }
