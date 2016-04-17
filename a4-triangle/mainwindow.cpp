@@ -75,7 +75,7 @@ void MainWindow::triangleSerpinsky(
         )
 {
     /*
-          B
+           B
           /\
          /__\
         /\  /\
@@ -84,7 +84,7 @@ void MainWindow::triangleSerpinsky(
      /__\    /__\
     /\  /\  /\  /\
    /__\/__\/__\/__\
- A                   C
+ A                  C
 */
 
     int x11,y11,x22,y22,x33,y33;
@@ -98,7 +98,7 @@ void MainWindow::triangleSerpinsky(
                     /\
                    /__\
                   /\  /\
-     x11,y11     /__\/__\ x22,y22
+         x11,y11 /__\/__\ x22,y22
                 /\      /\
                /__\    /__\
               /\  /\  /\  /\
