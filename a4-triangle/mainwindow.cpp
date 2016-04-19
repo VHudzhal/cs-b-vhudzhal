@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
       ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-ui->outPut->setWindowTitle("Triangle Serpinsky");
+    ui->outPut->setWindowTitle("Triangle Serpinsky");
     H = QPixmap(680,510);
     H.fill(Qt::transparent);
     pen = QPen(getRandColor(),10);
