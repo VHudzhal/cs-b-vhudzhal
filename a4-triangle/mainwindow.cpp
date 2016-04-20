@@ -63,7 +63,7 @@ void MainWindow::triangleSerpinsky(
         )
 {
     /*
-___________B_x2,y2
+B_x2,y2
            /\
           /__\
          /\  /\
