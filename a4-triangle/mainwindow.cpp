@@ -94,19 +94,25 @@ void MainWindow::triangleSerpinsky(
 }
 
 //button for build triangle
-
 void MainWindow::on_drawButton_clicked()
 {
     int order;
     double sideLength;
-
+//getting the entered text from the text panels
+//@param - The new value of sideLength
     QString str = ui->lineEdit->text();
+//@param - The new value of order
     QString str1 = ui->lineEdit_2->text();
 
     sideLength = str.toDouble();
     order = str1.toInt();
-
+//creating basic shapes triangle
     drawTriangle(50,450,350,50,650,450);
+//create a shape of a Sierpinsky triangle
+/*
+This function using the Sierpinski triangle build rules, 
+creates the shapes of triangles inside the main triangle, 
+in accordance with the input variables sideLength and order
+*/
     triangleSerpinsky(50,450,350,50,650,450, order - 1, sideLength);
-
 }
