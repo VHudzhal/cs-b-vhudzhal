@@ -72,7 +72,7 @@ void MainWindow::triangleSerpinsky(
                /__\    /__\
               /\  /\  /\  /\
              /__\/__\/__\/__\
-          x1,y1    x33,    x3,y3
+//        x1,y1    x33,    x3,y3
                    y33
                     
                     
